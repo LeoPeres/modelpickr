@@ -35,7 +35,7 @@ export type CatalogModel = {
   openWeights: boolean;
   price: Price;
   intelligence: Intelligence | null;
-  /** Task benchmark id → score in % (0–100). Missing means no data. */
+  /** Benchmark id (`tasks.ts`) → score in % (0–100). Missing means no data. */
   scores: Record<string, number>;
 };
 export type Source = {

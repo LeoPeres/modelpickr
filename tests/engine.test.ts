@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildCatalog, parseCsv } from "../lib/catalog/build";
 import { searchModels } from "../lib/catalog/search";
+import { defaultBenchmark, taskById } from "../lib/catalog/tasks";
 import type { CatalogModel } from "../lib/catalog/types";
 import {
   bestValues,
@@ -81,6 +82,7 @@ const benchCsv = `model_id,benchmark_id,performance,benchmark,model,model_versio
 m1,b1,0.9,GPQA diamond,Claude Big 2,claude-big_max,Claude Big 2,2026-01-01,
 m2,b1,0.85,GPQA diamond,Claude Mid 2,claude-mid_high,"Mid, Claude",2026-01-01,"Report, v2"
 m3,b1,0.5,GPQA diamond,Qwen Small,qwen-small,Qwen Small,2026-01-01,
+m2,b2,0.4,FrontierCode,Claude Mid 2,claude-mid_high,"Mid, Claude",2026-01-01,
 `;
 const catalog = buildCatalog(modelsDev, eciCsv, benchCsv, {
   generatedAt: "2026-10-07T00:00:00Z",
@@ -105,9 +107,10 @@ test("ECI casa por nome ou versão do Epoch, com ranking e intervalo", () => {
   // "Claude Mid 2" only appears in Epoch as display name / model version.
   assert.equal(byId("anthropic/claude-mid").intelligence?.value, 158);
   assert.equal(byId("anthropic/claude-mid").intelligence?.low, 155);
-  assert.equal(byId("alibaba/qwen-small").scores.science, 50);
-  assert.equal(byId("anthropic/claude-big").scores.science, 90);
-  assert.equal(byId("anthropic/claude-big").scores.software, undefined);
+  assert.equal(byId("alibaba/qwen-small").scores["gpqa-diamond"], 50);
+  assert.equal(byId("anthropic/claude-big").scores["gpqa-diamond"], 90);
+  assert.equal(byId("anthropic/claude-mid").scores.frontiercode, 40);
+  assert.equal(byId("anthropic/claude-big").scores.frontiercode, undefined);
 });
 test("custo mensal segue a fórmula, inclusive volume zero", () => {
   const p = { input: 0.1, output: 0.4 };
@@ -231,14 +234,14 @@ test("ranking: chaves iguais dividem a posição", () => {
   );
 });
 test("por tarefa: mínimo inclusivo, ausência excluída e empate preservado", () => {
-  const r = recommendForTask(catalog.models, "science", 85, defaultUsage);
+  const r = recommendForTask(catalog.models, "gpqa-diamond", 85, defaultUsage);
   assert.deepEqual(
     r.winners.map((w) => w.model.id),
     ["anthropic/claude-mid"],
   );
   assert.equal(
-    recommendForTask(catalog.models, "software", 0, defaultUsage).winners
-      .length,
+    recommendForTask(catalog.models, "swe-bench-verified", 0, defaultUsage)
+      .winners.length,
     0,
   );
   const same = catalog.models.map((m) => ({
@@ -246,8 +249,20 @@ test("por tarefa: mínimo inclusivo, ausência excluída e empate preservado", (
     price: { ...m.price, input: 1, output: 1 },
   }));
   assert.equal(
-    recommendForTask(same, "science", 85, defaultUsage).winners.length,
+    recommendForTask(same, "gpqa-diamond", 85, defaultUsage).winners.length,
     2,
+  );
+});
+test("benchmark padrão da tarefa é o com mais modelos; empate fica com o primeiro", () => {
+  const software = taskById("software")!;
+  assert.equal(defaultBenchmark(software, catalog.models).id, "frontiercode");
+  assert.equal(
+    defaultBenchmark(software, [byId("anthropic/claude-big")]).id,
+    "swe-bench-verified",
+  );
+  assert.equal(
+    defaultBenchmark(taskById("science")!, catalog.models).id,
+    "gpqa-diamond",
   );
 });
 test("busca ignora acentos e pontuação e filtra por empresa", () => {
@@ -285,6 +300,13 @@ test("cenário valida seleção e campos; alternativas só quando mais baratas",
   assert.ok(validScenario({ ...scenario, cached: 40 }, ids));
   assert.ok(!validScenario({ ...scenario, cached: 101 }, ids));
   assert.ok(!validScenario({ ...scenario, task: "unknown" }, ids));
+  assert.ok(validScenario({ ...scenario, benchmark: "hle" }, ids));
+  assert.ok(!validScenario({ ...scenario, benchmark: "frontiercode" }, ids));
+  // Without a score on the chosen benchmark there is nothing to compare.
+  assert.equal(
+    evaluateAlternatives({ ...scenario, benchmark: "hle" }, catalog).length,
+    0,
+  );
   assert.ok(!validScenario(scenario, ["alibaba/qwen-small"]));
   const alternatives = evaluateAlternatives(scenario, catalog);
   assert.ok(alternatives.length > 0);

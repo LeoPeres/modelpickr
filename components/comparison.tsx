@@ -37,7 +37,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { CatalogModel } from "@/lib/catalog/types";
-import { tasks, taskById } from "@/lib/catalog/tasks";
+import {
+  type Task,
+  benchmarkOf,
+  defaultBenchmark,
+  tasks,
+  taskById,
+} from "@/lib/catalog/tasks";
 import {
   bestValues,
   defaultUsage,
@@ -148,6 +154,8 @@ export default function Comparison() {
   const [ids, setIds] = useState<string[]>([]);
   const [usage, setUsage] = useState<Usage>(defaultUsage);
   const [task, setTask] = useState("science");
+  /** Benchmark picked for the current task; null follows `defaultBenchmark`. */
+  const [benchmark, setBenchmark] = useState<string | null>(null);
   const [minimum, setMinimum] = useState(80);
   const [reference, setReference] = useState("");
   const [differences, setDifferences] = useState(true);
@@ -183,6 +191,10 @@ export default function Comparison() {
             cached: saved.cached ?? 0,
           });
           setTask(saved.task);
+          // Older scenarios predate the choice and used the first benchmark.
+          setBenchmark(
+            saved.benchmark ?? taskById(saved.task)!.benchmarks[0].id,
+          );
           setGoal(saved.goal ?? "value");
           setMinimum(saved.minimum);
           setReference(saved.reference);
@@ -245,6 +257,7 @@ export default function Comparison() {
     setUsageOpen(false);
     setGoal("value");
     setTask("science");
+    setBenchmark(null);
     setMinimum(80);
     setEditing(null);
     setName("");
@@ -314,7 +327,14 @@ export default function Comparison() {
   );
   const chartHighlight = new Set(balanced.best.map((m) => m.id));
   const t = taskById(task) ?? tasks[0];
-  const taskRec = recommendForTask(chosen, t.id, minimum, usage);
+  const benchmarkFor = (x: Task) =>
+    x.id === t.id && benchmark
+      ? benchmarkOf(x, benchmark)
+      : defaultBenchmark(x, chosen);
+  const coverage = (id: string) =>
+    chosen.filter((m) => m.scores[id] !== undefined).length;
+  const b = benchmarkFor(t);
+  const taskRec = recommendForTask(chosen, b.id, minimum, usage);
   const range = useMemo(() => {
     const values = catalog.models
       .map((m) => m.intelligence?.value)
@@ -550,6 +570,7 @@ export default function Comparison() {
         name: name.trim(),
         models: ids,
         task: t.id,
+        benchmark: b.id,
         goal,
         minimum,
         reference,
@@ -571,7 +592,7 @@ export default function Comparison() {
       );
     }
   }
-  const alertScenario = `${name || "Comparação"}: ${chosen.map((m) => m.name).join(", ")}; ${number(usage.requests)} solicitações/mês; ${number(usage.inputTokens)} tokens de entrada${cached ? ` (${cached}% em cache)` : ""} e ${number(usage.outputTokens)} de saída; ${t.label} (${t.benchmark}), mínimo ${minimum}%.`;
+  const alertScenario = `${name || "Comparação"}: ${chosen.map((m) => m.name).join(", ")}; ${number(usage.requests)} solicitações/mês; ${number(usage.inputTokens)} tokens de entrada${cached ? ` (${cached}% em cache)` : ""} e ${number(usage.outputTokens)} de saída; ${t.label} (${b.name}), mínimo ${minimum}%.`;
   function explain() {
     if (!best || !smartest) return "";
     const isSmartest = balanced.smartest.includes(best);
@@ -1078,17 +1099,18 @@ export default function Comparison() {
                       ),
                     )}
                     {group("Benchmarks por tarefa · % de acerto", Target)}
-                    {tasks.map((x) =>
-                      row(
+                    {tasks.map((x) => {
+                      const xb = benchmarkFor(x);
+                      return row(
                         <span className="task-label">
                           {x.label}
-                          <small>{x.benchmark}</small>
+                          <small>{xb.name}</small>
                         </span>,
                         x.id,
-                        chosen.map((m) => m.scores[x.id] ?? null),
+                        chosen.map((m) => m.scores[xb.id] ?? null),
                         { best: true, format: (n) => `${number(n)}%` },
-                      ),
-                    )}
+                      );
+                    })}
                     {group("Capacidades", Cpu)}
                     {row(
                       "Contexto",
@@ -1161,9 +1183,7 @@ export default function Comparison() {
             <div className="task-grid" role="radiogroup" aria-label="Tarefa">
               {tasks.map((x) => {
                 const Icon = taskIcons[x.id] ?? Target;
-                const covered = chosen.filter(
-                  (m) => m.scores[x.id] !== undefined,
-                ).length;
+                const xb = benchmarkFor(x);
                 return (
                   <button
                     key={x.id}
@@ -1171,13 +1191,16 @@ export default function Comparison() {
                     role="radio"
                     aria-checked={t.id === x.id}
                     className="task-option"
-                    onClick={() => setTask(x.id)}
+                    onClick={() => {
+                      setTask(x.id);
+                      setBenchmark(null);
+                    }}
                   >
                     <Icon size={18} strokeWidth={1.75} />
                     <span>
                       {x.label}
                       <small>
-                        {x.benchmark} · {covered}/{chosen.length} com dados
+                        {xb.name} · {coverage(xb.id)}/{chosen.length} com dados
                       </small>
                     </span>
                   </button>
@@ -1186,7 +1209,22 @@ export default function Comparison() {
             </div>
             <div className="recommend-grid">
               <div className="surface padded fields-stack">
-                <p className="muted small">{t.description}</p>
+                {t.benchmarks.length > 1 && (
+                  <label className="field">
+                    <span>Benchmark</span>
+                    <select
+                      value={b.id}
+                      onChange={(e) => setBenchmark(e.target.value)}
+                    >
+                      {t.benchmarks.map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {x.name} · {coverage(x.id)}/{chosen.length} com dados
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <p className="muted small">{b.description}</p>
                 <label className="field">
                   <span>Nota mínima (%)</span>
                   <input
@@ -1249,7 +1287,7 @@ export default function Comparison() {
                       {taskRec.winners
                         .map((w) => `${number(w.score!)}%`)
                         .join(" e ")}{" "}
-                      em {t.benchmark}, mínimo {minimum}%.
+                      em {b.name}, mínimo {minimum}%.
                     </p>
                   </>
                 ) : (

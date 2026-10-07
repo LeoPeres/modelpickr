@@ -112,19 +112,22 @@ export default function Page() {
         <section>
           <Heading icon={Target}>Por tarefa</Heading>
           <p>
-            Cada tarefa usa um único benchmark, sem misturar escalas. Indicamos
-            o mais barato que atinge a nota mínima escolhida; quem não tem
-            resultado fica de fora.
+            Cada tarefa usa um único benchmark por vez, sem misturar escalas.
+            Começamos pelo que tem resultado para mais modelos da comparação, e
+            você pode trocar. Indicamos o mais barato que atinge a nota mínima
+            escolhida; quem não tem resultado fica de fora.
           </p>
           <dl className="definition-list">
-            {tasks.map((t) => (
-              <div key={t.id}>
-                <dt>
-                  {t.label} <span className="muted">· {t.benchmark}</span>
-                </dt>
-                <dd>{t.description}</dd>
-              </div>
-            ))}
+            {tasks.flatMap((t) =>
+              t.benchmarks.map((b) => (
+                <div key={b.id}>
+                  <dt>
+                    {t.label} <span className="muted">· {b.name}</span>
+                  </dt>
+                  <dd>{b.description}</dd>
+                </div>
+              )),
+            )}
           </dl>
         </section>
         <section>

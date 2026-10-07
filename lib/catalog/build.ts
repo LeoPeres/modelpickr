@@ -1,6 +1,6 @@
 // Pure catalog builder: turns the raw public sources into the app catalog.
 // No network or framework imports, so it runs in tests and scripts alike.
-import { tasks } from "./tasks";
+import { benchmarks } from "./tasks";
 import type { Catalog, CatalogModel, Source } from "./types";
 
 export const sourceUrls = {
@@ -189,9 +189,9 @@ export function buildCatalog(
       const epochScores = epoch && scoresByModel.get(epoch.Model);
       const scores: Record<string, number> = {};
       if (epochScores)
-        for (const t of tasks) {
-          const v = epochScores.get(t.epochName);
-          if (v !== undefined) scores[t.id] = Math.round(v * 1000) / 10;
+        for (const b of benchmarks) {
+          const v = epochScores.get(b.epochName);
+          if (v !== undefined) scores[b.id] = Math.round(v * 1000) / 10;
         }
       models.push({
         id: `${providerId}/${m.id}`,

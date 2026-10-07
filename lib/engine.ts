@@ -1,5 +1,6 @@
 // Pure, UI-independent comparison logic over the real catalog.
 import type { Catalog, CatalogModel, Price } from "./catalog/types";
+import { benchmarkOf, taskById } from "./catalog/tasks";
 export type Usage = {
   requests: number;
   inputTokens: number;
@@ -13,6 +14,8 @@ export type Scenario = Usage & {
   models: string[];
   /** Task id used by the advanced comparison. */
   task: string;
+  /** Benchmark id of that task; older scenarios use the task's first one. */
+  benchmark?: string;
   minimum: number;
   reference: string;
   /** Free-comparison goal; older scenarios without it default to "value". */
@@ -164,17 +167,17 @@ export function rankModels(
 export type TaskReason =
   "Atende ao mínimo" | "Abaixo do mínimo" | "Sem resultado nesta tarefa";
 /**
- * Advanced comparison: cheapest models with a score on the task's benchmark
+ * Advanced comparison: cheapest models with a score on the chosen benchmark
  * that meets the inclusive minimum. Missing scores are excluded, never zero.
  */
 export function recommendForTask(
   models: CatalogModel[],
-  task: string,
+  benchmark: string,
   minimum: number,
   usage: Usage,
 ) {
   const participants = models.map((m) => {
-    const score = m.scores[task] ?? null;
+    const score = m.scores[benchmark] ?? null;
     const reason: TaskReason =
       score === null
         ? "Sem resultado nesta tarefa"
@@ -211,10 +214,13 @@ export function detectChanges(before: Catalog, after: Catalog) {
 }
 /** Cheaper catalog models that meet a saved scenario's task minimum. */
 export function evaluateAlternatives(s: Scenario, catalog: Catalog) {
+  const task = taskById(s.task);
   const reference = catalog.models.find((m) => m.id === s.reference);
-  if (!reference || reference.scores[s.task] === undefined) return [];
+  if (!task || !reference) return [];
+  const benchmark = benchmarkOf(task, s.benchmark).id;
+  if (reference.scores[benchmark] === undefined) return [];
   const referenceCost = monthlyCost(s, reference.price);
-  return recommendForTask(catalog.models, s.task, s.minimum, s)
+  return recommendForTask(catalog.models, benchmark, s.minimum, s)
     .participants.filter(
       (p) => p.reason === "Atende ao mínimo" && p.cost < referenceCost,
     )

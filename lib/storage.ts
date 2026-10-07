@@ -33,6 +33,8 @@ export function validScenario(s: unknown, knownIds: string[]): s is Scenario {
       cached: v.cached,
     }) &&
     Boolean(taskById(v.task)) &&
+    (v.benchmark === undefined ||
+      taskById(v.task)!.benchmarks.some((b) => b.id === v.benchmark)) &&
     Number.isFinite(v.minimum) &&
     v.minimum >= 0 &&
     v.minimum <= 100 &&
