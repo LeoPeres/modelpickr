@@ -44,13 +44,13 @@ export default function Catalog() {
   const filtered = searchModels(catalog.models, search, { provider, sort });
   return (
     <>
-      <header className="page-head">
-        <h1>Modelos</h1>
+      <div className="block-head">
+        <h2 id="catalog-title">Todos os modelos</h2>
         <p>
           {catalog.models.length} modelos das principais APIs. Selecione de 2 a{" "}
           {maxModels} para comparar.
         </p>
-      </header>
+      </div>
       <div className="toolbar">
         <label className="search">
           <Search size={18} />

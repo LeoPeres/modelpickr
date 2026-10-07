@@ -165,7 +165,8 @@ export function Shell({
               <Link href="/" className="brand" aria-label="ModelPickr">
                 <Logo size={24} />
               </Link>
-              {sourceNote}
+              {/* The home hero already shows the sources and date. */}
+              {path !== "/" && sourceNote}
             </div>
             {children}
           </main>
@@ -200,7 +201,7 @@ export function Shell({
             </span>
             <span className="selection-text">
               <strong>
-                {selected.length} de {maxModels}
+                <b key={selected.length}>{selected.length}</b> de {maxModels}
                 <span className="hide-sm"> selecionados</span>
               </strong>
               <small>

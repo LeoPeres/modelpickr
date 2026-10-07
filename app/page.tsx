@@ -1,4 +1,4 @@
-import Catalog from "@/components/catalog";
+import Home from "@/components/home";
 export default function Page() {
-  return <Catalog />;
+  return <Home />;
 }
