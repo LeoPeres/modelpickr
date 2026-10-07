@@ -2,7 +2,7 @@ async (page) => {
   const base = "http://localhost:3000";
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base);
-  await page.evaluate(() => localStorage.removeItem("modelmatch:selection"));
+  await page.evaluate(() => localStorage.removeItem("modelpickr:selection"));
   await page.reload();
   const search = page.getByRole("textbox", {
     name: "Buscar modelos ou empresas",

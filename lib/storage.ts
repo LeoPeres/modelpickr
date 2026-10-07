@@ -7,9 +7,9 @@ import {
 } from "./engine";
 import { taskById } from "./catalog/tasks";
 export const keys = {
-  selection: "modelmatch:selection",
-  scenarios: "modelmatch:scenarios",
-  interest: "modelmatch:interest",
+  selection: "modelpickr:selection",
+  scenarios: "modelpickr:scenarios",
+  interest: "modelpickr:interest",
 };
 export function readLocal<T>(key: string, fallback: T): T {
   const value = localStorage.getItem(key);

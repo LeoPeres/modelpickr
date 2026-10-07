@@ -1,4 +1,4 @@
-# ModelMatch
+# ModelPickr
 
 **Compare modelos. Escolha melhor.** MVP de um comparador de modelos de linguagem com Next.js App Router, TypeScript, Tailwind CSS e Recharts.
 
@@ -45,7 +45,7 @@ O servidor busca as fontes e guarda o catálogo por um dia (`lib/catalog/server.
 
 ## Lista de interesse
 
-`InterestAdapter` e `demoInterestAdapter` estão em `lib/storage.ts`. Atualmente o formulário valida e guarda até 20 registros **somente neste navegador**, em `modelmatch:interest`, com consentimento. A confirmação informa que nada foi enviado ou ativado. Não existe backend, envio de e-mails, sincronização, assinatura ou pagamento.
+`InterestAdapter` e `demoInterestAdapter` estão em `lib/storage.ts`. Atualmente o formulário valida e guarda até 20 registros **somente neste navegador**, em `modelpickr:interest`, com consentimento. A confirmação informa que nada foi enviado ou ativado. Não existe backend, envio de e-mails, sincronização, assinatura ou pagamento.
 
 Para conectar uma lista real, implemente um adaptador que chame um endpoint próprio via HTTPS. Valide e normalize e-mail/tipo de uso/cenário e consentimento no servidor, limite tamanho e frequência por IP, inclua proteção contra abuso e persistência durável. Não exponha credenciais no cliente. Atualize a mensagem para “enviado” somente após confirmação do servidor. Defina retenção, acesso e política de privacidade antes de captar dados reais. A submissão não deve ativar e-mails automáticos nesta versão.
 

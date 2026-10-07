@@ -136,7 +136,7 @@ export function Shell({
           <aside className="sidebar">
             <Link href="/" className="brand">
               <Logo />
-              <span>ModelMatch</span>
+              <span>ModelPickr</span>
             </Link>
             <nav aria-label="Navegação principal">
               {nav.map(([url, label, Icon]) => (
@@ -162,7 +162,7 @@ export function Shell({
           </aside>
           <main>
             <div className="mobile-top mobile-only">
-              <Link href="/" className="brand" aria-label="ModelMatch">
+              <Link href="/" className="brand" aria-label="ModelPickr">
                 <Logo size={24} />
               </Link>
               {sourceNote}

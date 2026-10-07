@@ -11,7 +11,7 @@ const display = Instrument_Serif({
   variable: "--font-display",
 });
 export const metadata: Metadata = {
-  title: "ModelMatch",
+  title: "ModelPickr",
   description:
     "Compare preço e inteligência dos principais modelos de IA com dados públicos e atualizados.",
 };
@@ -30,7 +30,7 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=null;try{t=localStorage.getItem('modelmatch:theme')}catch(e){}document.documentElement.dataset.theme=t==='dark'||t==='light'?t:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'})()`,
+            __html: `(function(){var t=null;try{t=localStorage.getItem('modelpickr:theme')}catch(e){}document.documentElement.dataset.theme=t==='dark'||t==='light'?t:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'})()`,
           }}
         />
       </head>

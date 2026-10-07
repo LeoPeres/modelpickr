@@ -1,7 +1,7 @@
 // Locale layer: stable IDs stay independent of displayed text.
 export const locale = "pt-BR";
 export const messages = {
-  brand: "ModelMatch",
+  brand: "ModelPickr",
   slogan: "Compare modelos. Escolha melhor.",
   sources: "Dados: models.dev e Epoch AI",
   navigation: {

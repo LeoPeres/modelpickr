@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { messages } from "@/lib/i18n";
 
-const storageKey = "modelmatch:theme";
+const storageKey = "modelpickr:theme";
 type Theme = "light" | "dark";
 
 export function ThemeToggle() {
