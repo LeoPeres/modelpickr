@@ -21,7 +21,7 @@ npm run sync        # refresh the fallback snapshot data/catalog.json and public
 npx tsx --test --test-name-pattern="seleção por URL" tests/engine.test.ts   # single test
 ```
 
-There is no lint script; Prettier is installed (`npx prettier --write <files>`). Browser QA: start the dev server, then `python3 scripts/run-browser-qa.py` (drives `scripts/browser-qa.js` through a Codex Playwright skill wrapper at `~/.codex/skills/playwright/`; screenshots go to `output/playwright/`, gitignored).
+CI (`.github/workflows/ci.yml`) runs typecheck, tests and build on pushes to `main` and on pull requests. There is no lint script; Prettier is installed (`npx prettier --write <files>`). Browser QA: start the dev server, then `python3 scripts/run-browser-qa.py` (drives `scripts/browser-qa.js` through a Codex Playwright skill wrapper at `~/.codex/skills/playwright/`; screenshots go to `output/playwright/`, gitignored).
 
 ## Architecture
 
