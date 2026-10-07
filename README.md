@@ -4,88 +4,93 @@
 
 # ModelPickr
 
-**Compare modelos. Escolha melhor.**
+**English** · [Português (Brasil)](README.pt-BR.md)
 
-Comparador de modelos de linguagem com preços e inteligência reais: catálogo, comparação lado a lado, calculadora de custo e recomendação pelo seu objetivo.
+**Compare models. Pick better.**
+
+A language model comparator built on real prices and real intelligence scores: catalog, side-by-side comparison, cost calculator and a recommendation tuned to your goal.
 
 [![CI](https://github.com/LeoPeres/modelpickr/actions/workflows/ci.yml/badge.svg)](https://github.com/LeoPeres/modelpickr/actions/workflows/ci.yml)
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React 19](https://img.shields.io/badge/React-19-149eca?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
-[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue)](LICENSE)
-[![Dados: Epoch AI (CC BY 4.0)](https://img.shields.io/badge/dados-Epoch%20AI%20%C2%B7%20CC%20BY%204.0-555)](https://epoch.ai/benchmarks)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Data: Epoch AI (CC BY 4.0)](https://img.shields.io/badge/data-Epoch%20AI%20%C2%B7%20CC%20BY%204.0-555)](https://epoch.ai/benchmarks)
 
 </div>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
-  <img alt="Tela de comparação do ModelPickr: objetivo, uso, recomendação e cartões dos modelos" src="docs/screenshot-light.png">
+  <img alt="ModelPickr comparison screen: goal, usage, recommendation and model cards" src="docs/screenshot-light.png">
 </picture>
 
-## Sumário
+> [!NOTE]
+> The app's interface is in Brazilian Portuguese. Prices are in US dollars, as published by each provider.
 
-- [Por que](#por-que)
-- [Funcionalidades](#funcionalidades)
-- [Como a recomendação funciona](#como-a-recomendação-funciona)
-- [Dados e atribuição](#dados-e-atribuição)
-- [Começando](#começando)
-- [Testes](#testes)
-- [Arquitetura](#arquitetura)
-- [Contribuindo](#contribuindo)
-- [Licença](#licença)
+## Contents
 
-## Por que
+- [Why](#why)
+- [Features](#features)
+- [How the recommendation works](#how-the-recommendation-works)
+- [Data and attribution](#data-and-attribution)
+- [Getting started](#getting-started)
+- [Testing](#testing)
+- [Architecture](#architecture)
+- [Contributing](#contributing)
+- [License](#license)
 
-Escolher um modelo de linguagem para produção costuma significar cruzar páginas de preço de cada empresa com rankings que usam escalas diferentes. O ModelPickr junta as duas coisas em um só lugar, com dados públicos e verificáveis, e responde uma pergunta concreta: **para o meu uso, qual modelo entrega mais pelo que custa?**
+## Why
 
-Nenhuma nota é inventada ou estimada. Dado ausente aparece como `—`, nunca como zero.
+Choosing a language model for production usually means cross-checking each provider's pricing page against leaderboards that all use different scales. ModelPickr puts both in one place, using public and verifiable data, and answers a concrete question: **for my workload, which model gives me the most for what it costs?**
 
-## Funcionalidades
+No score is ever made up or estimated. Missing data shows as `—`, never as zero.
 
-- **Catálogo** (`/`): todos os modelos pagos com saída de texto e preço oficial da própria empresa, com busca tolerante a acentos e pontuação, filtro por empresa e ordenação.
-- **Comparação** (`/compare`): até 10 modelos lado a lado, com estado inteiro na URL (`?models=anthropic/claude-opus-5-5,openai/gpt-6.1-sol`), pronta para compartilhar.
-  - Objetivo: **custo-benefício**, **inteligência máxima** ou **menor custo**.
-  - Perfis de uso (Chat, RAG, Agente, Classificação) ou volume e tokens ajustados à mão, incluindo a fração de entrada lida do cache.
-  - Ranking dos cartões, com troféus para os três primeiros e destaque da melhor escolha.
-  - Gráfico custo × inteligência em SVG, com eixo de custo logarítmico e a linha de valor igual passando pela recomendação.
-  - Custo mensal por modelo, tabela de detalhes ("Só diferenças") e comparação por tarefa usando um benchmark da Epoch AI por vez.
-- **Cenários** (`/scenarios`): salve, reabra, edite e exclua comparações.
-- **Metodologia** (`/methodology`): fórmulas, fontes, limitações e atribuição.
-- **Pro** (`/pro`): página de interesse em recursos futuros. Não há cobrança nem envio de dados.
-- Tema claro e escuro, layout responsivo (barra de abas no celular), navegação por teclado no seletor de modelos (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>) e respeito a `prefers-reduced-motion`.
+## Features
 
-Seleção, cenários e lista de interesse ficam **apenas no `localStorage` do navegador**. O app não tem banco de dados, contas nem rastreamento.
+- **Catalog** (`/`): every paid, text-output model with a first-party price, with accent- and punctuation-insensitive search, a provider filter and sorting.
+- **Comparison** (`/compare`): up to 10 models side by side, with the whole state in the URL (`?models=anthropic/claude-opus-5-5,openai/gpt-6.1-sol`), ready to share.
+  - Goal: **best value**, **highest intelligence** or **lowest cost**.
+  - Usage presets (Chat, RAG, Agent, Classification), or volume and tokens set by hand, including the share of input read from cache.
+  - Ranked model cards, with trophies for the top three and the best pick highlighted.
+  - Cost × intelligence SVG chart, with a log cost axis and the equal-value line drawn through the recommendation.
+  - Monthly cost per model, a details table ("only differences") and a per-task comparison using one Epoch AI benchmark at a time.
+- **Scenarios** (`/scenarios`): save, reopen, edit and delete comparisons.
+- **Methodology** (`/methodology`): formulas, sources, limitations and attribution.
+- **Pro** (`/pro`): an interest page for upcoming features. Nothing is charged and nothing is sent.
+- Light and dark themes, responsive layout (bottom tab bar on mobile), keyboard navigation in the model picker (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>) and support for `prefers-reduced-motion`.
 
-## Como a recomendação funciona
+Selection, scenarios and the interest list live **only in the browser's `localStorage`**. There is no database, no accounts and no tracking.
 
-A inteligência de cada modelo é o [Epoch Capabilities Index (ECI)](https://epoch.ai/benchmarks). O custo mensal usa o preço de lista por milhão de tokens:
+## How the recommendation works
+
+Each model's intelligence is its [Epoch Capabilities Index (ECI)](https://epoch.ai/benchmarks). Monthly cost uses the list price per million tokens:
 
 ```
-custo = solicitações × (tokens_entrada × taxa_entrada + tokens_saída × preço_saída) / 1.000.000
+cost = requests × (input_tokens × input_rate + output_tokens × output_price) / 1,000,000
 ```
 
-onde `taxa_entrada` mistura o preço de entrada com o de leitura de cache conforme a porcentagem de cache informada (sem preço de cache, vale o preço de entrada). Não entram escrita em cache, batch nem faixas de preço.
+where `input_rate` blends the input price with the cache-read price by the cache percentage you set (a model without a cache price pays the input price). Cache writes, batch pricing and pricing tiers are not included.
 
-| Objetivo                 | Regra                                                                                                                  |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Custo-benefício (padrão) | Maior `ECI − 3 × log2(custo mensal)`: dobrar o custo precisa render pelo menos 3 pontos de ECI. Não depende do volume. |
-| Inteligência máxima      | Todo modelo cujo intervalo de confiança alcança o do melhor ECI conta como empate; vence o mais barato entre eles.     |
-| Menor custo              | O modelo avaliado mais barato.                                                                                         |
+| Goal                 | Rule                                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Best value (default) | Highest `ECI − 3 × log2(monthly cost)`: doubling the cost must buy at least 3 ECI points. Independent of volume.      |
+| Highest intelligence | Every model whose confidence interval reaches the top ECI model's interval counts as tied; the cheapest of them wins. |
+| Lowest cost          | The cheapest rated model.                                                                                             |
 
-Modelos sem ECI nunca vencem uma recomendação. Na comparação por tarefa, cada tarefa usa exatamente um benchmark, e vence o modelo mais barato que atinge a nota mínima (inclusiva). As regras são funções puras em [`lib/engine.ts`](lib/engine.ts), cobertas por [`tests/engine.test.ts`](tests/engine.test.ts).
+Models without an ECI never win a recommendation. In the per-task comparison, scores from different benchmarks are never mixed: each task uses one benchmark at a time, and the cheapest model meeting the (inclusive) minimum score wins. The rules are pure functions in [`lib/engine.ts`](lib/engine.ts), covered by [`tests/engine.test.ts`](tests/engine.test.ts).
 
-## Dados e atribuição
+## Data and attribution
 
-| Fonte                                   | Uso                                                                       | Licença                                                                          |
-| --------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [models.dev](https://models.dev)        | Preços oficiais de API, contexto, capacidades, datas e logos das empresas | MIT                                                                              |
-| [Epoch AI](https://epoch.ai/benchmarks) | ECI e benchmarks por tarefa                                               | CC BY 4.0 (atribuição obrigatória, exibida na barra lateral e em `/methodology`) |
+| Source                                  | Used for                                                                 | License                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| [models.dev](https://models.dev)        | Official API prices, context, capabilities, release dates, company logos | MIT                                                                          |
+| [Epoch AI](https://epoch.ai/benchmarks) | ECI and per-task benchmarks                                              | CC BY 4.0 (attribution required, shown in the sidebar and on `/methodology`) |
 
-Só entram preços da empresa dona do modelo; revendas (por exemplo, um provedor hospedando o modelo de outro) são descartadas. O servidor busca as fontes e guarda o catálogo montado por um dia. Se alguma fonte falhar ou o catálogo ao vivo encolher pela metade, o app usa a cópia em [`data/catalog.json`](data/catalog.json).
+Only prices from the company that makes the model are kept; resellers (say, one provider hosting another's model) are dropped. The server fetches the sources and caches the built catalog for a day. If a source fails or the live catalog shrinks by half, the app falls back to the snapshot in [`data/catalog.json`](data/catalog.json).
 
-## Começando
+## Getting started
 
-Requisitos: Node.js 22 ou mais recente (o CI usa Node 24) e npm. Docker só é necessário para os testes de ponta a ponta. Não há variáveis de ambiente obrigatórias.
+Requirements: Node.js 22 or newer (CI uses Node 24) and npm. Docker is only needed for the end-to-end tests. No environment variables are required.
 
 ```sh
 git clone https://github.com/LeoPeres/modelpickr.git
@@ -94,77 +99,77 @@ npm ci
 npm run dev   # http://localhost:3000
 ```
 
-| Script               | O que faz                                                               |
+| Script               | What it does                                                            |
 | -------------------- | ----------------------------------------------------------------------- |
-| `npm run dev`        | Servidor de desenvolvimento (Turbopack) em `0.0.0.0:3000`               |
-| `npm run build`      | Build de produção (usa Webpack de propósito)                            |
-| `npm start`          | Serve o build de produção                                               |
+| `npm run dev`        | Development server (Turbopack) on `0.0.0.0:3000`                        |
+| `npm run build`      | Production build (uses Webpack on purpose)                              |
+| `npm start`          | Serves the production build                                             |
 | `npm run typecheck`  | `tsc --noEmit`                                                          |
-| `npm test`           | Testes unitários (`node:test` via `tsx`)                                |
-| `npm run sync`       | Atualiza `data/catalog.json` e `public/logos/*.svg` a partir das fontes |
-| `npm run e2e`        | Testes de ponta a ponta e visuais com Playwright, em Docker             |
-| `npm run e2e:update` | Igual, regravando as capturas de referência                             |
+| `npm test`           | Unit tests (`node:test` via `tsx`)                                      |
+| `npm run sync`       | Refreshes `data/catalog.json` and `public/logos/*.svg` from the sources |
+| `npm run e2e`        | Playwright end-to-end and visual tests, in Docker                       |
+| `npm run e2e:update` | Same, rewriting the screenshot baselines                                |
 
-## Testes
+## Testing
 
-**Unitários.** `npm test` roda [`tests/engine.test.ts`](tests/engine.test.ts) com fixtures próprias, sem depender dos dados ao vivo. Para um teste só:
+**Unit.** `npm test` runs [`tests/engine.test.ts`](tests/engine.test.ts) against inline fixtures, independent of live data. To run a single test:
 
 ```sh
 npx tsx --test --test-name-pattern="seleção por URL" tests/engine.test.ts
 ```
 
-**Ponta a ponta e visuais.** `npm run e2e` copia o projeto para a imagem oficial do Playwright, gera um build de produção e roda os fluxos principais ([`flows.spec.ts`](tests/e2e/flows.spec.ts)) e as comparações de captura de tela ([`visual.spec.ts`](tests/e2e/visual.spec.ts)) em desktop (1400×900) e celular (Pixel 7), nos temas claro e escuro. O catálogo fica congelado em [`tests/e2e/catalog.json`](tests/e2e/catalog.json), então mudanças nos dados não quebram as capturas.
+**End-to-end and visual.** `npm run e2e` copies the project into the official Playwright image, makes a production build and runs the main flows ([`flows.spec.ts`](tests/e2e/flows.spec.ts)) and the screenshot comparisons ([`visual.spec.ts`](tests/e2e/visual.spec.ts)) on desktop (1400×900) and mobile (Pixel 7), in light and dark themes. The catalog is frozen in [`tests/e2e/catalog.json`](tests/e2e/catalog.json), so data changes never break the screenshots.
 
 ```sh
-npm run e2e -- --project desktop --grep "gráfico"   # um subconjunto
-npx playwright show-report                          # relatório da última execução
+npm run e2e -- --project desktop --grep "gráfico"   # a subset
+npx playwright show-report                          # report from the last run
 ```
 
-Quando um teste visual falha, `test-results/` traz as imagens esperada, atual e a diferença. Gere as referências sempre pelo Docker: a renderização de fontes muda fora dele.
+When a visual test fails, `test-results/` holds the expected, actual and diff images. Always generate baselines through Docker: font rendering differs outside it.
 
-**CI.** O [workflow](.github/workflows/ci.yml) roda typecheck, testes unitários, build e a suíte de ponta a ponta em cada push para `main` e em cada pull request.
+**CI.** The [workflow](.github/workflows/ci.yml) runs typecheck, unit tests, build and the end-to-end suite on every push to `main` and on every pull request.
 
-## Arquitetura
+## Architecture
 
-Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS v4 e [lucide-react](https://lucide.dev). Sem biblioteca de gráficos nem de estado.
+Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS v4 and [lucide-react](https://lucide.dev). No chart or state management library.
 
 ```
-app/                  Rotas (wrappers finos); /scenarios e /methodology com conteúdo inline
+app/                  Routes (thin wrappers); /scenarios and /methodology hold their content inline
 components/
-  shell.tsx           Layout cliente; useCatalog() e useSelection()
-  catalog.tsx         Catálogo (/)
-  comparison.tsx      Comparação (/compare), estado na URL
-  cost-chart.tsx      Gráfico custo × inteligência em SVG
-  model-picker.tsx    Seletor estilo command palette
-  carousel.tsx        Carrossel com snap, arraste e animações FLIP
+  shell.tsx           Client layout; useCatalog() and useSelection()
+  catalog.tsx         Catalog (/)
+  comparison.tsx      Comparison (/compare), state in the URL
+  cost-chart.tsx      Cost × intelligence SVG chart
+  model-picker.tsx    Command-palette model picker
+  carousel.tsx        Snap carousel with drag and FLIP animations
 lib/
-  catalog/build.ts    Monta o catálogo a partir das três fontes brutas (função pura)
-  catalog/server.ts   getCatalog(): fontes ao vivo, cache de um dia, fallback local
-  catalog/tasks.ts    Tarefas → benchmark da Epoch AI
-  engine.ts           Custo, rankings, empates e recomendações (função pura)
-  storage.ts          Chaves e validadores do localStorage
-  i18n.ts             Formatadores Intl em pt-BR
-data/catalog.json     Cópia de segurança do catálogo
-scripts/              Sincronização de dados e execução do e2e em Docker
-tests/                Testes unitários e e2e
+  catalog/build.ts    Builds the catalog from the three raw sources (pure)
+  catalog/server.ts   getCatalog(): live sources, one-day cache, local fallback
+  catalog/tasks.ts    Tasks → Epoch AI benchmarks
+  engine.ts           Cost, rankings, ties and recommendations (pure)
+  storage.ts          localStorage keys and validators
+  i18n.ts             pt-BR Intl formatters
+data/catalog.json     Fallback catalog snapshot
+scripts/              Data sync and the Dockerized e2e runner
+tests/                Unit and e2e tests
 ```
 
-A interface é em português do Brasil (`lang="pt-BR"`), e números, moeda e datas passam por `Intl` em [`lib/i18n.ts`](lib/i18n.ts) (por exemplo, `US$ 1.400,00`).
+The UI is in Brazilian Portuguese (`lang="pt-BR"`), and numbers, currency and dates go through `Intl` in [`lib/i18n.ts`](lib/i18n.ts) (for example, `US$ 1.400,00`).
 
-## Contribuindo
+## Contributing
 
-Issues e pull requests são bem-vindos. Antes de abrir um PR:
+Issues and pull requests are welcome. Before opening a PR:
 
-1. Rode `npm run typecheck` e `npm test`.
-2. Se a mudança altera a interface de propósito, rode `npm run e2e:update` e inclua as capturas novas no PR.
-3. Siga as regras do domínio: nunca invente ou estime uma nota (dado ausente é `null` e aparece como `—`), nunca formate números com `toFixed` ou `$` solto, e escreva textos da interface e nomes de teste em pt-BR.
-4. Cores novas precisam de variável para os dois temas e contraste de pelo menos 4,5:1.
-5. Mensagens de commit em inglês.
+1. Run `npm run typecheck` and `npm test`.
+2. If the change alters the UI on purpose, run `npm run e2e:update` and include the new baselines in the PR.
+3. Follow the domain rules: never make up or estimate a score (missing data is `null` and shows as `—`), never format numbers with `toFixed` or a bare `$`, and write UI copy and test names in Brazilian Portuguese.
+4. New colors need a variable for both themes and a contrast of at least 4.5:1.
+5. Write commit messages in English.
 
-Formatação com Prettier: `npx prettier --write <arquivos>`.
+Format with Prettier: `npx prettier --write <files>`.
 
-## Licença
+## License
 
-O código é distribuído sob a [licença MIT](LICENSE). Os dados seguem as licenças das fontes: models.dev sob MIT e Epoch AI sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), que exige atribuição em qualquer redistribuição.
+The code is released under the [MIT License](LICENSE). The data follows its sources' licenses: models.dev under MIT and Epoch AI under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), which requires attribution in any redistribution.
 
-Dados de preço e especificações: [models.dev](https://models.dev). Inteligência e benchmarks: [Epoch AI](https://epoch.ai/benchmarks).
+Pricing and specs: [models.dev](https://models.dev). Intelligence and benchmarks: [Epoch AI](https://epoch.ai/benchmarks).
