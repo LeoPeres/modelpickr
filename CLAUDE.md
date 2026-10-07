@@ -19,9 +19,14 @@ npm run typecheck   # tsc --noEmit
 npm test            # node:test via tsx, runs tests/*.test.ts
 npm run sync        # refresh the fallback snapshot data/catalog.json and public/logos/*.svg
 npx tsx --test --test-name-pattern="seleção por URL" tests/engine.test.ts   # single test
+npm run e2e         # Playwright e2e + visual tests in Docker (same image as CI)
+npm run e2e:update  # same, rewriting screenshot baselines after an intended UI change
+npm run e2e -- --project desktop --grep "gráfico"   # subset
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, tests and build on pushes to `main` and on pull requests. There is no lint script; Prettier is installed (`npx prettier --write <files>`). Browser QA: start the dev server, then `python3 scripts/run-browser-qa.py` (drives `scripts/browser-qa.js` through a Codex Playwright skill wrapper at `~/.codex/skills/playwright/`; screenshots go to `output/playwright/`, gitignored).
+End-to-end tests (`tests/e2e/`, `playwright.config.ts`): `flows.spec.ts` covers the main flows, `visual.spec.ts` (tag `@visual`) compares screenshots against baselines in `tests/e2e/__screenshots__/<desktop|mobile>/`, on a desktop (1400×900) and a mobile (Pixel 7) project. They run against a production build serving the frozen `tests/e2e/catalog.json` (`CATALOG_FIXTURE` env makes `getCatalog()` read it instead of the live sources), so data changes never break them. `scripts/e2e-docker.sh` copies the project into `mcr.microsoft.com/playwright:v<version>-noble` and builds there, leaving the host's `.next`, `node_modules` and config untouched; only `playwright-report/`, `test-results/` (expected/actual/diff images) and baselines come back. Generate baselines only through Docker: font rendering differs on the host. `@playwright/test` is pinned exactly, and the image tag in `ci.yml` must match it.
+
+CI (`.github/workflows/ci.yml`) runs typecheck, tests and build, plus the e2e job in the Playwright container (uploading the report on failure), on pushes to `main` and on pull requests. There is no lint script; Prettier is installed (`npx prettier --write <files>`). Browser QA: start the dev server, then `python3 scripts/run-browser-qa.py` (drives `scripts/browser-qa.js` through a Codex Playwright skill wrapper at `~/.codex/skills/playwright/`; screenshots go to `output/playwright/`, gitignored).
 
 ## Architecture
 

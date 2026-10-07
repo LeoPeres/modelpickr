@@ -1,5 +1,6 @@
 // Server-side catalog loader: live public sources, cached for a day, with the
 // bundled snapshot as fallback when a source is down or returns bad data.
+import { readFile } from "node:fs/promises";
 import { cacheLife } from "next/cache";
 import snapshot from "@/data/catalog.json";
 import { buildCatalog, sourceUrls } from "./build";
@@ -14,6 +15,9 @@ async function text(url: string) {
 export async function getCatalog(): Promise<Catalog> {
   "use cache";
   cacheLife("days");
+  // End-to-end tests pin the data so screenshots do not change with it.
+  if (process.env.CATALOG_FIXTURE)
+    return JSON.parse(await readFile(process.env.CATALOG_FIXTURE, "utf8"));
   try {
     const [modelsDev, eci, benchmarks] = await Promise.all([
       text(sourceUrls.modelsDev).then(JSON.parse),

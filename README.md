@@ -19,6 +19,15 @@ npm run build
 npm start
 ```
 
+Testes de ponta a ponta e visuais (Playwright, exigem Docker):
+
+```sh
+npm run e2e          # fluxos e capturas de tela, no mesmo container do CI
+npm run e2e:update   # regrava as capturas de referência após uma mudança visual intencional
+```
+
+Rodam contra um build de produção com o catálogo congelado em `tests/e2e/catalog.json`, então dados novos não quebram as capturas. Quando um teste visual falha, `test-results/` traz as imagens esperada, atual e a diferença; o relatório completo fica em `playwright-report/` (`npx playwright show-report`).
+
 O build usa Webpack para evitar a falha de subprocessos/portas do Turbopack neste ambiente. O servidor de desenvolvimento usa Turbopack.
 
 ## O que funciona
@@ -55,4 +64,4 @@ Para conectar uma lista real, implemente um adaptador que chame um endpoint pró
 
 ## Validação
 
-Testes unitários exercitam fórmula/volume zero, restauração e limite da seleção, direção dos melhores valores, empates, mínimo inclusivo, resultados ausentes, versões/unidades/configurações incompatíveis, preço ausente, cenários locais, histórico e confirmação de cadastro em demo. Validação de navegador inclui fluxos reais no desktop (1440 px) e celular (390 px), incluindo salvar/editar/excluir e o formulário pré-preenchido. O roteiro reproduzível está em `scripts/browser-qa.js`; com a skill Playwright instalada, inicie o servidor e rode `python3 scripts/run-browser-qa.py` (usa dados de QA no navegador isolado da CLI). Capturas ficam em `output/playwright/`, ignorado pelo Git. Sem deploy ou integração externa nesta entrega.
+Testes unitários exercitam fórmula/volume zero, restauração e limite da seleção, direção dos melhores valores, empates, mínimo inclusivo, resultados ausentes, versões/unidades/configurações incompatíveis, preço ausente, cenários locais, histórico e confirmação de cadastro em demo. Validação de navegador inclui fluxos reais no desktop (1440 px) e celular (390 px), incluindo salvar/editar/excluir e o formulário pré-preenchido. O roteiro reproduzível está em `scripts/browser-qa.js`; com a skill Playwright instalada, inicie o servidor e rode `python3 scripts/run-browser-qa.py` (usa dados de QA no navegador isolado da CLI). Capturas ficam em `output/playwright/`, ignorado pelo Git. Os testes Playwright em `tests/e2e/` cobrem os fluxos principais e comparam capturas de tela em desktop e celular, claro e escuro; o CI roda tudo em cada push e pull request.
