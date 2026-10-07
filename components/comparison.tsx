@@ -24,6 +24,7 @@ import {
   PiggyBank,
   Scale,
   Plus,
+  SquarePen,
   Shapes,
   Share2,
   Sigma,
@@ -230,6 +231,29 @@ export default function Comparison() {
     const q = new URLSearchParams(params.toString());
     q.set("models", next.join(","));
     router.replace(`/compare?${q}`, { scroll: false });
+  }
+  /**
+   * Starts from scratch: no models, default usage and goal, no scenario. It
+   * pushes a history entry, so Back restores the previous comparison.
+   */
+  function startNew() {
+    loadedScenario.current = null;
+    setIds([]);
+    setSelected([]);
+    setReference("");
+    setUsage(defaultUsage);
+    setUsageOpen(false);
+    setGoal("value");
+    setTask("science");
+    setMinimum(80);
+    setEditing(null);
+    setName("");
+    setSaveOpen(false);
+    setFocus(null);
+    setMessage("");
+    router.push("/compare?models=", { scroll: false });
+    window.scrollTo({ top: 0 });
+    setPicker({ kind: "add" });
   }
   function changeGoal(next: Goal) {
     setGoal(next);
@@ -582,6 +606,13 @@ export default function Comparison() {
           <p>Preço e inteligência, lado a lado.</p>
         </div>
         <div className="actions">
+          <button
+            className="button"
+            disabled={!ids.length && !editing}
+            onClick={startNew}
+          >
+            <SquarePen size={16} /> Nova comparação
+          </button>
           <button className="button" disabled={!enough} onClick={share}>
             <Share2 size={16} /> Compartilhar
           </button>

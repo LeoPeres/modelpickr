@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Info,
   Repeat,
+  SquarePen,
   Target,
   Trash2,
 } from "lucide-react";
@@ -44,9 +45,16 @@ export default function Page() {
   }
   return (
     <>
-      <header className="page-head">
-        <h1>Cenários</h1>
-        <p>Salvos apenas neste navegador.</p>
+      <header className="page-head with-actions">
+        <div>
+          <h1>Cenários</h1>
+          <p>Salvos apenas neste navegador.</p>
+        </div>
+        <div className="actions">
+          <Link className="button" href="/compare?models=">
+            <SquarePen size={16} /> Nova comparação
+          </Link>
+        </div>
       </header>
       {message && (
         <div role="alert" className="notice">
