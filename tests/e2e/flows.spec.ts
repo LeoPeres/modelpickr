@@ -113,3 +113,44 @@ test("Ctrl+K abre o seletor e adiciona um modelo", async ({ page }) => {
   await expect(cards(page)).toHaveCount(5);
   await expect(page).toHaveURL(/xai/);
 });
+
+test("link do app no ChatGPT/Claude traz o uso e limpa a URL", async ({
+  page,
+}) => {
+  await page.goto(compare("&requests=1000&input=2000&output=0&cached=0"));
+  await expect(verdict(page).locator(".verdict-figures strong")).toHaveText(
+    "US$ 0,20",
+  );
+  await expect(page).not.toHaveURL(/requests=/);
+  await expect(page).toHaveURL(/models=/);
+});
+
+test("servidor MCP lista as ferramentas e compara pelo catálogo", async ({
+  request,
+}) => {
+  const rpc = async (method: string, params: object) => {
+    const response = await request.post("/mcp", {
+      headers: { Accept: "application/json, text/event-stream" },
+      data: { jsonrpc: "2.0", id: 1, method, params },
+    });
+    expect(response.ok()).toBeTruthy();
+    return (await response.json()).result;
+  };
+  const { tools } = await rpc("tools/list", {});
+  expect(tools.map((t: { name: string }) => t.name).sort()).toEqual([
+    "compare_models",
+    "recommend_model",
+    "search_models",
+  ]);
+  const widget = tools[1]._meta.ui.resourceUri;
+  const { contents } = await rpc("resources/read", { uri: widget });
+  expect(contents[0].mimeType).toBe("text/html;profile=mcp-app");
+  expect(contents[0].text).toContain("<!doctype html>");
+  const result = await rpc("tools/call", {
+    name: "compare_models",
+    arguments: { models },
+  });
+  expect(result.structuredContent.models[0].name).toBe("GPT-6 Luna");
+  expect(result.structuredContent.compareUrl).toContain("/compare?models=");
+  expect((await request.get("/mcp")).status()).toBe(405);
+});

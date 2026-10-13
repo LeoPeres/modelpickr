@@ -50,6 +50,8 @@ import {
   maxModels,
   monthlyCost,
   isGoal,
+  usageFromUrl,
+  usageParams,
   pointsPerDoubling,
   rankModels,
   recommend,
@@ -207,6 +209,15 @@ export default function Comparison() {
     }
     const goalParam = params.get("goal");
     if (isGoal(goalParam)) setGoal(goalParam);
+    // Links from the ChatGPT/Claude app carry the usage. It is applied once
+    // and leaves the URL, which does not track later edits to the usage.
+    const linked = scenarioId ? null : usageFromUrl(params);
+    if (linked) {
+      setUsage(linked);
+      const q = new URLSearchParams(params.toString());
+      for (const key of usageParams) q.delete(key);
+      router.replace(`/compare?${q}`, { scroll: false });
+    }
     setIds(next);
     setSelected(next);
     setLoaded(true);

@@ -1,0 +1,334 @@
+/* Styles of the MCP Apps widget. Structure (text, borders, surfaces) follows
+   the host's style variables so it looks native in ChatGPT and Claude; the
+   fallbacks cover hosts that send none. Brand colors keep the site's roles:
+   violet = recommendation, blue = intelligence. */
+:root {
+  --ink: var(--color-text-primary, #141413);
+  --muted: var(--color-text-secondary, #4d4c48);
+  --faint: var(--color-text-tertiary, #73726c);
+  --line: var(--color-border-tertiary, rgb(31 30 29 / 0.15));
+  --surface: var(--color-background-secondary, #f5f4ed);
+  --inverse: var(--color-background-inverse, #141413);
+  --on-inverse: var(--color-text-inverse, #ffffff);
+  --danger: var(--color-text-danger, #7f2c28);
+  --radius: var(--border-radius-lg, 10px);
+  --accent: #5546d6;
+  --accent-soft: #eeecfc;
+  --accent-ink: #4338ca;
+  --dot: #8f8e88;
+  --gold: #fbf3d6;
+  --gold-ink: #7d5c00;
+  --silver: #eef0f3;
+  --silver-ink: #545c66;
+  --bronze: #f8ebe0;
+  --bronze-ink: #874a1b;
+}
+:root[data-theme="dark"] {
+  --ink: var(--color-text-primary, #faf9f5);
+  --muted: var(--color-text-secondary, #c2c0b6);
+  --faint: var(--color-text-tertiary, #9c9a92);
+  --line: var(--color-border-tertiary, rgb(222 220 209 / 0.15));
+  --surface: var(--color-background-secondary, #262624);
+  --inverse: var(--color-background-inverse, #faf9f5);
+  --on-inverse: var(--color-text-inverse, #141413);
+  --danger: var(--color-text-danger, #ee8884);
+  --accent: #9085e9;
+  --accent-soft: rgb(144 133 233 / 0.16);
+  --accent-ink: #b4abf3;
+  --dot: #8a8880;
+  --gold: rgb(242 201 76 / 0.16);
+  --gold-ink: #f2c94c;
+  --silver: rgb(201 209 218 / 0.14);
+  --silver-ink: #c9d1da;
+  --bronze: rgb(227 154 95 / 0.16);
+  --bronze-ink: #e39a5f;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  padding: calc(12px + var(--inset-top, 0px))
+    calc(12px + var(--inset-right, 0px)) calc(12px + var(--inset-bottom, 0px))
+    calc(12px + var(--inset-left, 0px));
+  background: transparent;
+  color: var(--ink);
+  font-family: var(
+    --font-sans,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif
+  );
+  font-size: var(--font-text-sm-size, 14px);
+  line-height: 1.4;
+}
+p {
+  margin: 0;
+}
+.brand {
+  font-size: var(--font-text-xs-size, 12px);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent-ink);
+}
+.usage {
+  margin-top: 2px;
+  color: var(--muted);
+}
+.goals {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.goals button {
+  flex: 1;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.goals button[aria-pressed="true"] {
+  background: var(--inverse);
+  color: var(--on-inverse);
+}
+.goals button:disabled {
+  cursor: progress;
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.rule,
+.note,
+.sources,
+figcaption {
+  color: var(--faint);
+  font-size: var(--font-text-xs-size, 12px);
+}
+.rule {
+  margin-top: 8px;
+}
+.note {
+  margin-top: 8px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+}
+.notice[role="alert"] {
+  color: var(--danger);
+}
+.chart {
+  margin: 12px 0 0;
+}
+.chart svg {
+  display: block;
+  max-width: 100%;
+}
+.chart .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart .tick {
+  fill: var(--faint);
+  font-size: 10px;
+}
+.chart .dot {
+  fill: var(--dot);
+}
+.chart .dot.is-best {
+  fill: var(--accent);
+  stroke: var(--accent-soft);
+  stroke-width: 4;
+  paint-order: stroke;
+}
+.chart .label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.chart .label.is-best {
+  fill: var(--accent-ink);
+  font-weight: 600;
+}
+figcaption {
+  margin-top: 2px;
+  text-align: center;
+}
+.rows {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  transition: opacity 0.15s;
+}
+.rows.is-busy {
+  opacity: 0.5;
+}
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+.row:first-child {
+  border-top: 0;
+}
+.row.is-best {
+  border-top-color: transparent;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.row.is-best + .row {
+  border-top-color: transparent;
+}
+.rank {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--font-text-xs-size, 12px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.rank.gold {
+  background: var(--gold);
+  color: var(--gold-ink);
+}
+.rank.silver {
+  background: var(--silver);
+  color: var(--silver-ink);
+}
+.rank.bronze {
+  background: var(--bronze);
+  color: var(--bronze-ink);
+}
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+}
+.name strong {
+  font-weight: 600;
+}
+.badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent, #ffffff);
+  font-size: 11px;
+  font-weight: 600;
+}
+:root[data-theme="dark"] .badge {
+  color: #0a0a0a;
+}
+.meta {
+  color: var(--muted);
+  font-size: var(--font-text-xs-size, 12px);
+}
+/* Company and ECI, then prices: on narrow cards they wrap as two groups. */
+.meta span {
+  display: inline-block;
+}
+.meta span + span::before {
+  content: "·";
+  margin: 0 0.35em;
+}
+.cost {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.cost strong {
+  font-weight: 600;
+}
+.cost span {
+  color: var(--faint);
+  font-size: var(--font-text-xs-size, 12px);
+}
+.more,
+.open {
+  min-height: 44px;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.more {
+  width: 100%;
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+.open {
+  padding: 0 16px;
+  border: 0;
+  background: var(--inverse);
+  color: var(--on-inverse);
+}
+.skeleton {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.skeleton i {
+  height: 46px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes pulse {
+  to {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton i {
+    animation: none;
+  }
+  .rows {
+    transition: none;
+  }
+}
+@media (max-width: 480px) {
+  .meta span {
+    display: block;
+  }
+  .meta span + span::before {
+    content: none;
+  }
+}
+@media (max-width: 420px) {
+  .goals button {
+    padding: 4px;
+    font-size: var(--font-text-xs-size, 12px);
+  }
+}

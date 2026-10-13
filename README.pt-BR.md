@@ -28,6 +28,7 @@ Comparador de modelos de linguagem com preços e inteligência reais: catálogo,
 
 - [Por que](#por-que)
 - [Funcionalidades](#funcionalidades)
+- [App no ChatGPT e no Claude](#app-no-chatgpt-e-no-claude)
 - [Como a recomendação funciona](#como-a-recomendação-funciona)
 - [Dados e atribuição](#dados-e-atribuição)
 - [Começando](#começando)
@@ -58,6 +59,26 @@ Nenhuma nota é inventada ou estimada. Dado ausente aparece como `—`, nunca co
 
 Seleção, cenários e lista de interesse ficam **apenas no `localStorage` do navegador**. O app não tem banco de dados, contas nem rastreamento.
 
+## App no ChatGPT e no Claude
+
+O ModelPickr também é um servidor [MCP](https://modelcontextprotocol.io) com interface [MCP Apps](https://modelcontextprotocol.github.io/ext-apps/api/), o padrão aberto usado tanto pelos apps do ChatGPT quanto pelos conectores do Claude. O site publicado o serve em **`/mcp`** (Streamable HTTP, sem estado, sem autenticação, somente leitura): um único endereço atende os dois assistentes.
+
+| Ferramenta        | Para que o assistente usa                                                             | Mostra o widget |
+| ----------------- | ------------------------------------------------------------------------------------- | --------------- |
+| `search_models`   | Buscar modelos por nome ou empresa; devolve os ids aceitos pelas outras ferramentas   | Não             |
+| `compare_models`  | Ranquear de 1 a 10 modelos citados para um objetivo e estimar o custo mensal          | Sim             |
+| `recommend_model` | Escolher no catálogo inteiro, com filtros (empresa, contexto, orçamento, capacidades) | Sim             |
+
+O widget mostra o ranking, o gráfico custo × inteligência e o custo mensal dentro da conversa, segue o tema e o idioma do assistente (português ou inglês), permite trocar o objetivo e leva à mesma comparação no site. Toda resposta inclui a atribuição das fontes.
+
+Para testar, o servidor precisa estar acessível por HTTPS público (um deploy ou um túnel):
+
+- **Claude**: Configurações → Conectores → Adicionar conector personalizado, com `https://<seu-domínio>/mcp`.
+- **ChatGPT**: ative o modo de desenvolvedor e adicione a mesma URL como app.
+- **Localmente**: `npx @modelcontextprotocol/inspector` e conecte em `http://localhost:3000/mcp` (só as ferramentas, sem o widget).
+
+Os links de volta ao site usam o host por onde a requisição chegou; defina `SITE_URL` (por exemplo `https://modelpickr.example`) para fixá-los. Para os assistentes sugerirem o app a quem ainda não o adicionou, é preciso estar listado em cada diretório ([Claude](https://claude.com/docs/connectors/building/submission), [ChatGPT](https://developers.openai.com/apps-sdk/deploy/submission)).
+
 ## Como a recomendação funciona
 
 A inteligência de cada modelo é o [Epoch Capabilities Index (ECI)](https://epoch.ai/benchmarks). O custo mensal usa o preço de lista por milhão de tokens:
@@ -87,7 +108,7 @@ Só entram preços da empresa dona do modelo; revendas (por exemplo, um provedor
 
 ## Começando
 
-Requisitos: Node.js 22 ou mais recente (o CI usa Node 24) e npm. Docker só é necessário para os testes de ponta a ponta. Não há variáveis de ambiente obrigatórias.
+Requisitos: Node.js 22 ou mais recente (o CI usa Node 24) e npm. Docker só é necessário para os testes de ponta a ponta. Não há variáveis de ambiente obrigatórias (`SITE_URL` é opcional, veja [App no ChatGPT e no Claude](#app-no-chatgpt-e-no-claude)).
 
 ```sh
 git clone https://github.com/LeoPeres/modelpickr.git
@@ -104,12 +125,13 @@ npm run dev   # http://localhost:3000
 | `npm run typecheck`  | `tsc --noEmit`                                                          |
 | `npm test`           | Testes unitários (`node:test` via `tsx`)                                |
 | `npm run sync`       | Atualiza `data/catalog.json` e `public/logos/*.svg` a partir das fontes |
+| `npm run widget`     | Empacota o widget do ChatGPT/Claude; roda antes de dev, build e testes  |
 | `npm run e2e`        | Testes de ponta a ponta e visuais com Playwright, em Docker             |
 | `npm run e2e:update` | Igual, regravando as capturas de referência                             |
 
 ## Testes
 
-**Unitários.** `npm test` roda [`tests/engine.test.ts`](tests/engine.test.ts) com fixtures próprias, sem depender dos dados ao vivo. Para um teste só:
+**Unitários.** `npm test` roda [`tests/engine.test.ts`](tests/engine.test.ts) e [`tests/mcp.test.ts`](tests/mcp.test.ts) (as ferramentas MCP, por um cliente em memória) com fixtures próprias, sem depender dos dados ao vivo. Para um teste só:
 
 ```sh
 npx tsx --test --test-name-pattern="seleção por URL" tests/engine.test.ts
@@ -132,6 +154,7 @@ Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS v4
 
 ```
 app/                  Rotas (wrappers finos); /scenarios e /methodology com conteúdo inline
+  mcp/route.ts        Endpoint MCP para ChatGPT e Claude
 components/
   shell.tsx           Layout cliente; useCatalog() e useSelection()
   catalog.tsx         Catálogo (/)
@@ -144,10 +167,13 @@ lib/
   catalog/server.ts   getCatalog(): fontes ao vivo, cache de um dia, fallback local
   catalog/tasks.ts    Tarefas → benchmark da Epoch AI
   engine.ts           Custo, rankings, empates e recomendações (função pura)
+  mcp/server.ts       Ferramentas MCP e o recurso do widget
+  mcp/view.ts         O que as ferramentas devolvem (função pura)
   storage.ts          Chaves e validadores do localStorage
   i18n.ts             Formatadores Intl em pt-BR
+widget/               Widget exibido dentro do ChatGPT e do Claude (TypeScript e CSS puros)
 data/catalog.json     Cópia de segurança do catálogo
-scripts/              Sincronização de dados e execução do e2e em Docker
+scripts/              Sincronização de dados, empacotamento do widget e execução do e2e em Docker
 tests/                Testes unitários e e2e
 ```
 

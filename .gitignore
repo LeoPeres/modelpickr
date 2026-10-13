@@ -6,3 +6,5 @@ playwright-report/
 .env*
 .playwright-cli/
 output/
+# Built by `npm run widget` (scripts/build-widget.mts).
+lib/mcp/widget.generated.json

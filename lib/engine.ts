@@ -53,6 +53,27 @@ export function validUsage(u: Usage) {
     ) && (u.cached ?? 0) <= 100
   );
 }
+export const usageParams = ["requests", "input", "output", "cached"] as const;
+/**
+ * Usage carried by a `/compare` link (the MCP app builds them): `requests`,
+ * `input` and `output` are required together, `cached` is optional. Null when
+ * absent or invalid.
+ */
+export function usageFromUrl(params: {
+  get(name: string): string | null;
+}): Usage | null {
+  const read = (name: (typeof usageParams)[number]) => {
+    const raw = params.get(name);
+    return raw === null || !raw.trim() ? NaN : Number(raw);
+  };
+  const usage = {
+    requests: read("requests"),
+    inputTokens: read("input"),
+    outputTokens: read("output"),
+    cached: params.get("cached") === null ? 0 : read("cached"),
+  };
+  return validUsage(usage) ? usage : null;
+}
 export function selectionFromUrl(value: string, knownIds: string[]) {
   const known = new Set(knownIds);
   return [...new Set(value.split(",").filter((id) => known.has(id)))].slice(
